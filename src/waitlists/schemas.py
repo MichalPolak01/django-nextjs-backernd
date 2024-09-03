@@ -12,7 +12,6 @@ class WaitlistEntryListSchema(Schema):
     email: EmailStr
     
 
-
 class WaitlistEntryDetailSchema(Schema):
     id: int
     email: EmailStr
