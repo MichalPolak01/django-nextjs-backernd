@@ -2,10 +2,12 @@ from typing import List
 
 from django.shortcuts import get_object_or_404
 from ninja import Router
+import json
 
 import helpers
+from .forms import WaitlistCreateForm
 from .models import WaitlistEntry
-from .schemas import WaitlistEntryListSchema, WaitlistEntryDetailSchema, WaitlistEntryCreateSchema
+from .schemas import WaitlistEntryListSchema, WaitlistEntryDetailSchema, WaitlistEntryCreateSchema, ErrorWaitlistEntryCreateSchema
 
 router = Router()
 
@@ -16,9 +18,22 @@ def list_waitlist_entries(request):
     return qs
 
 
-@router.post("", response=WaitlistEntryDetailSchema, auth=helpers.api_auth_user_or_annon)
+@router.post(
+    "",
+    response = {
+        200: WaitlistEntryDetailSchema,
+        400: ErrorWaitlistEntryCreateSchema
+    },
+    auth=helpers.api_auth_user_or_annon
+)
 def create_waitlist_entry(request, data: WaitlistEntryCreateSchema):
-    obj = WaitlistEntry(**data.dict())
+    form = WaitlistCreateForm(data.dict())
+
+    if not form.is_valid():
+        form_errors = json.loads(form.errors.as_json())
+        return 400, form_errors
+
+    obj = form.save(commit=False)
     if request.user.is_authenticated:
         obj.user = request.user
     obj.save()
