@@ -19,6 +19,6 @@ class WaitlistCreateForm(forms.ModelForm):
         qs = WaitlistEntry.objects.filter(email=email, timestamp__day=today)
 
         if qs.count() > 5:
-            raise forms.ValidationError("Cannot enter this email again todat.")
+            raise forms.ValidationError("Cannot enter this email again today.")
 
         return email
